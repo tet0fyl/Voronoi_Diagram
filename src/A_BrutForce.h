@@ -1,0 +1,11 @@
+//
+// Created by Théophile BRAYE on 23/11/2020.
+//
+
+#ifndef ASCICAMERA_A_DISCRETVORONOIBRUTFORCE_H
+#define ASCICAMERA_A_DISCRETVORONOIBRUTFORCE_H
+#include "A_BrutForce.h"
+
+int brutForce();
+
+#endif //ASCICAMERA_A_DISCRETVORONOIBRUTFORCE_H
