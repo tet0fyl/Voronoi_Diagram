@@ -22,13 +22,12 @@ int brutForce() {
     cout << "############################" << endl;
 
     // MACRO
-    int numberOfPoint = 2;
-    int imgCols = 50;
-    int imgRows = 50;
+    int numberOfPoint = 5;
+    int imgCols = 100;
+    int imgRows = 100;
 
-    // VARIABLE
+    // VARIABLE FOR POINT GENERATING
     Point points[numberOfPoint];
-    cv::Mat img(imgRows, imgCols, CV_8UC3);
 
     // GENERATE POINTS
     for(int i = 0; i < numberOfPoint; i++) {
@@ -51,9 +50,15 @@ int brutForce() {
     };
     cout << endl;
 
-    //DRAW VORONOI ARRAY
+    // VARIABLE FOR VORONOI ARRAY DRAWING
     int pixelCol = -1;
     int pixelRow = -1;
+    string distanceFormulaLabel[3] = {"Distance Euclidienne","Distance de Manhattan","Distance de Tchebychev"};
+    double minLoss[3], loss[3];
+    cv::Mat images[3] = {cv::Mat(imgRows, imgCols, CV_8UC3),cv::Mat(imgRows, imgCols, CV_8UC3),cv::Mat(imgRows, imgCols, CV_8UC3)};
+    Point nearest[3];
+
+    // DRAW VORONOI ARRAY
     for(int i=0; i < (imgRows * imgCols); i++) {
         cout << "DRAW PIXELS : " << (int)((double)i / (double)((imgRows * imgCols) - 1 ) * 100) << " %\r";
         if(i % imgCols == 0) {
@@ -61,32 +66,41 @@ int brutForce() {
             pixelRow++;
         }
         pixelCol++;
-        Point nearest;
-        double minLoss = -1;
+        minLoss[0] = -1.0, minLoss[1] = -1.0, minLoss[2] = -1.0 ;
         for(int j = 0; j < numberOfPoint; j++) {
             //LOSS
-            double loss = sqrt((pixelCol - points[j].x) * (pixelCol - points[j].x) + (pixelRow - points[j].y) * (pixelRow - points[j].y));
-            //double loss = abs(pixelCol - points[j].x) + abs(pixelRow - points[j].y);
-            //double loss = (abs(pixelCol - points[j].x) > abs(pixelRow - points[j].y))?abs(pixelCol - points[j].x):abs(pixelRow - points[j].y);
-            if(minLoss < 0 || minLoss > loss){
-                minLoss = loss;
-                nearest = points[j];
-            };
+            //Euclidienne
+            loss[0] = sqrt((pixelCol - points[j].x) * (pixelCol - points[j].x) + (pixelRow - points[j].y) * (pixelRow - points[j].y));
+            //Manhattan
+            loss[1] = abs(pixelCol - points[j].x) + abs(pixelRow - points[j].y);
+            //Tchebychev
+            loss[2] = (abs(pixelCol - points[j].x) > abs(pixelRow - points[j].y))?abs(pixelCol - points[j].x):abs(pixelRow - points[j].y);
+
+            for(int k = 0; k < 3; k++ ) {
+                if(minLoss[k] < 0 || minLoss[k] > loss[k]){
+                    minLoss[k] = loss[k];
+                    nearest[k] = points[j];
+                };
+            }
         }
-        if(pixelCol == nearest.x && pixelRow == nearest.y) {
-            img.at<cv::Vec3b>(pixelRow, pixelCol)[0] = 0;
-            img.at<cv::Vec3b>(pixelRow, pixelCol)[1] = 0;
-            img.at<cv::Vec3b>(pixelRow, pixelCol)[2] = 0;
-            continue;
+        for(int k = 0; k < 3; k++) {
+            if(pixelCol == nearest[k].x && pixelRow == nearest[k].y) {
+                images[k].at<cv::Vec3b>(pixelRow, pixelCol)[0] = 0;
+                images[k].at<cv::Vec3b>(pixelRow, pixelCol)[1] = 0;
+                images[k].at<cv::Vec3b>(pixelRow, pixelCol)[2] = 0;
+                continue;
+            }
+            images[k].at<cv::Vec3b>(pixelRow, pixelCol)[0] = nearest[k].colors[0];
+            images[k].at<cv::Vec3b>(pixelRow, pixelCol)[1] = nearest[k].colors[1];
+            images[k].at<cv::Vec3b>(pixelRow, pixelCol)[2] = nearest[k].colors[2];
         }
-        img.at<cv::Vec3b>(pixelRow, pixelCol)[0] = nearest.colors[0];
-        img.at<cv::Vec3b>(pixelRow, pixelCol)[1] = nearest.colors[1];
-        img.at<cv::Vec3b>(pixelRow, pixelCol)[2] = nearest.colors[2];
     }
 
     cout << endl;
     cout << "PROCESS FINISH" << endl;
-    cv::imshow("Brut Force Voronoï", img);
+    for(int k = 0; k < 3; k++){
+        cv::imshow("Brut Force Voronoï : " + distanceFormulaLabel[k], images[k]);
+    }
     cv::waitKey(0);
 
     return EXIT_SUCCESS;
