@@ -4,7 +4,7 @@
 
 #ifndef ASCICAMERA_A_DISCRETVORONOIBRUTFORCE_H
 #define ASCICAMERA_A_DISCRETVORONOIBRUTFORCE_H
-#include "A_BrutForce.h"
+#include "A_BrutForceVoronoi.h"
 
 int brutForce();
 
